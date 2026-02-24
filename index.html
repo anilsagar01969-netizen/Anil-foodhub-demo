@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>FoodHub Complete Demo</title>
+<style>
+body{font-family:Arial;background:#111;color:white;margin:0;text-align:center}
+header{background:red;padding:15px;font-size:26px;font-weight:bold}
+
+input,button{padding:8px;margin:5px}
+button{background:red;color:white;border:none;cursor:pointer}
+button:hover{background:darkred}
+
+.food-item{
+background:#1a1a1a;
+margin:15px;
+padding:15px;
+border-radius:10px;
+display:inline-block;
+width:220px;
+}
+
+#cartBox{
+background:#222;
+padding:15px;
+margin:20px;
+border-radius:10px;
+}
+
+#noResult{
+color:yellow;
+font-size:18px;
+display:none;
+margin-top:20px;
+}
+
+.progress{
+width:80%;
+background:#444;
+margin:20px auto;
+height:20px;
+border-radius:20px;
+overflow:hidden;
+}
+.bar{height:100%;width:0%;background:lime;transition:9s linear}
+
+.road{
+width:100%;
+height:100px;
+background:#333;
+position:relative;
+overflow:hidden;
+margin-top:20px;
+}
+.bike{
+font-size:40px;
+position:absolute;
+left:-60px;
+top:25px;
+transition:9s linear;
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginPage">
+<h2>Login with OTP</h2>
+<input type="text" id="username" placeholder="Enter Name"><br>
+<input type="number" id="mobile" placeholder="Enter Mobile"><br>
+<button onclick="sendOTP()">Send OTP</button>
+
+<div id="otpSection" style="display:none">
+<input type="number" id="otpInput" placeholder="Enter OTP"><br>
+<button onclick="verifyOTP()">Verify OTP</button>
+</div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none">
+
+<header>🍔 FoodHub Demo Website 🍕</header>
+
+<!-- SEARCH BAR -->
+<input type="text" id="searchInput" placeholder="🔍 Search Food..."
+onkeyup="searchFood()" style="width:60%;font-size:16px">
+
+<div id="noResult">❌ No Food Found</div>
+
+<!-- MENU ITEMS -->
+<div id="menu">
+
+<div class="food-item"><h3>Cheese Burger</h3><p>₹199</p>
+<button onclick="addToCart('Cheese Burger',199)">Add</button></div>
+
+<div class="food-item"><h3>Double Patty Burger</h3><p>₹249</p>
+<button onclick="addToCart('Double Patty Burger',249)">Add</button></div>
+
+<div class="food-item"><h3>Farmhouse Pizza</h3><p>₹349</p>
+<button onclick="addToCart('Farmhouse Pizza',349)">Add</button></div>
+
+<div class="food-item"><h3>Veg Momos</h3><p>₹129</p>
+<button onclick="addToCart('Veg Momos',129)">Add</button></div>
+
+<div class="food-item"><h3>Chowmein</h3><p>₹149</p>
+<button onclick="addToCart('Chowmein',149)">Add</button></div>
+
+<div class="food-item"><h3>Masala Maggi</h3><p>₹99</p>
+<button onclick="addToCart('Masala Maggi',99)">Add</button></div>
+
+<div class="food-item"><h3>Veg Manchurian</h3><p>₹179</p>
+<button onclick="addToCart('Veg Manchurian',179)">Add</button></div>
+
+</div>
+
+<!-- CART -->
+<div id="cartBox">
+<h2>🛒 Cart</h2>
+<ul id="cartList"></ul>
+<p>Total: ₹<span id="total">0</span></p>
+
+<input type="text" id="coupon" placeholder="Enter Coupon">
+<button onclick="applyCoupon()">Apply</button>
+
+<p>Grand Total: ₹<span id="grandTotal">0</span></p>
+</div>
+
+<!-- TRACKING -->
+<h2 id="status">Order Status: Not Started</h2>
+<div class="road"><div class="bike" id="bike">🏍️</div></div>
+<div class="progress"><div class="bar" id="progressBar"></div></div>
+<button onclick="startTracking()">Start Delivery</button>
+
+<!-- ORDER HISTORY -->
+<h2>Order History</h2>
+<ul id="orderHistory"></ul>
+
+</div>
+
+<script>
+
+var generatedOTP;
+var cart=[];
+var total=0;
+var discount=0;
+
+/* OTP */
+function sendOTP(){
+generatedOTP=Math.floor(1000+Math.random()*9000);
+alert("Demo OTP: "+generatedOTP);
+document.getElementById("otpSection").style.display="block";
+}
+
+function verifyOTP(){
+if(document.getElementById("otpInput").value==generatedOTP){
+document.getElementById("loginPage").style.display="none";
+document.getElementById("app").style.display="block";
+loadHistory();
+}else{alert("Wrong OTP")}
+}
+
+/* SEARCH */
+function searchFood(){
+var input=document.getElementById("searchInput").value.toLowerCase();
+var items=document.getElementsByClassName("food-item");
+var found=false;
+
+for(var i=0;i<items.length;i++){
+var text=items[i].innerText.toLowerCase();
+if(text.includes(input)){
+items[i].style.display="inline-block";
+found=true;
+}else{
+items[i].style.display="none";
+}
+}
+document.getElementById("noResult").style.display=found?"none":"block";
+}
+
+/* CART */
+function addToCart(name,price){
+cart.push({name,price});
+total+=price;
+updateCart();
+}
+
+function updateCart(){
+var list=document.getElementById("cartList");
+list.innerHTML="";
+cart.forEach(item=>{
+var li=document.createElement("li");
+li.innerText=item.name+" - ₹"+item.price;
+list.appendChild(li);
+});
+document.getElementById("total").innerText=total;
+document.getElementById("grandTotal").innerText=total-discount;
+}
+
+/* COUPON */
+function applyCoupon(){
+var code=document.getElementById("coupon").value;
+if(code=="FOOD30"){
+discount=total*0.30;
+alert("30% Discount Applied");
+}else{
+discount=0;
+alert("Invalid Coupon");
+}
+document.getElementById("grandTotal").innerText=total-discount;
+}
+
+/* TRACKING */
+function startTracking(){
+var bike=document.getElementById("bike");
+var bar=document.getElementById("progressBar");
+var status=document.getElementById("status");
+
+status.innerText="Out for Delivery 🚚";
+bike.style.left="100%";
+bar.style.width="100%";
+
+setTimeout(function(){
+status.innerText="Delivered 🎉";
+saveHistory();
+},9000);
+}
+
+/* HISTORY */
+function saveHistory(){
+var orders=JSON.parse(localStorage.getItem("orders"))||[];
+orders.push("Order Delivered - ₹"+(total-discount));
+localStorage.setItem("orders",JSON.stringify(orders));
+loadHistory();
+}
+
+function loadHistory(){
+var orders=JSON.parse(localStorage.getItem("orders"))||[];
+var list=document.getElementById("orderHistory");
+list.innerHTML="";
+orders.forEach(o=>{
+var li=document.createElement("li");
+li.innerText=o;
+list.appendChild(li);
+});
+}
+
+</script>
+
+</body>
+</html>
